@@ -24,12 +24,12 @@ class Camera
     public: 
     // default constructor, start at origin facing -z direction
     Camera(): 
-    velocity {0.05f}, angular_velocity {0.05f}, position {0.f, 0.f, 0.f}, pitch {0.f}, yaw {0.f}, roll {0.f}, fov {M_PI/6}
+    velocity {0.05f}, angular_velocity {0.05f}, position {0.f, 0.f, 0.f}, pitch {0.f}, yaw {0.f}, roll {0.f}, fov {pi/6}
     {}
 
     // custom starting point and orientation
     Camera(vec3 position, float pitch, float yaw, float roll):
-    velocity {0.05f}, angular_velocity {0.05f}, position {position}, pitch {0.f}, yaw {0.f}, roll {0.f}, fov {M_PI/6}
+    velocity {0.05f}, angular_velocity {0.05f}, position {position}, pitch {0.f}, yaw {0.f}, roll {0.f}, fov {pi/6}
     {}
 
     ~Camera(){}

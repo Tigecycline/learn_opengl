@@ -18,10 +18,7 @@ typedef mat<2> mat2;
 typedef mat<3> mat3;
 typedef mat<4> mat4;
 
-// #define PI (float)M_PI // one-byte value for pi
-
 // global variables
-static const float right_angle = M_PI / 2;
 GLuint vao; // vertex array object, store state configurations
 GLuint vbo, vbo2; // vertex buffer object
 GLuint ebo; // element buffer object
@@ -337,7 +334,7 @@ int main()
         glBindVertexArray(vao);
 
         // perspective project
-        mat4 projection = perspective_matrix(0.1f, 100.f, M_PI/6, (float) screen_width/screen_height);
+        mat4 projection = perspective_matrix(0.1f, 100.f, pi/6, (float) screen_width/screen_height);
         shader_program.pass_mat4("projection", projection.begin());
 
         for (int i = 0; i < 10; ++i){

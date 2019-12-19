@@ -9,8 +9,8 @@
 #include <cmath>
 
 
-
-
+static const float pi = 3.14159265358979323846;
+static const float right_angle = pi / 2;
 
 
 /* 
@@ -517,7 +517,7 @@ const mat<4> scale(const mat<4>& m, float sx, float sy, float sz)
 const mat<4> perspective_matrix(float znear, float zfar, float theta, float aspect)
 {
     assert(0 < znear && znear < zfar);
-    assert(0 < theta && theta < M_PI / 2);
+    assert(0 < theta && theta < pi / 2);
     assert(0 < aspect);
     mat<4> result;
     float f = 1.f / std::tan(theta);
