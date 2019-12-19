@@ -529,6 +529,22 @@ const mat<4> perspective_matrix(float znear, float zfar, float theta, float aspe
     return result;
 }
 
+
+// PRE: front and right must be perpendicular and normalized
+const mat<4> look_at(const vec<3> front, const vec<3> right)
+{
+    vec<3> up = cross(right, front);
+    mat<4> result (1.f);
+    for (int i = 0; i < 3; ++i){
+        result[0][i] = right[i];
+        result[1][i] = up[i];
+        result[2][i] = - front[i];
+    }
+
+    return result;
+}
+
+
 // PRE: camera position, target position, up direction of world space
 // PRE: cannot look directly down/up, i.e. target - position cannot be parallel with world_up
 // POST: corresponding camera view matrix
@@ -537,18 +553,8 @@ const mat<4> camera_view_matrix(const vec<3>& position, const vec<3>& target, co
     assert(target != position); // otherwise direction is meaning less
     vec<3> direction = normalize(target - position);
     vec<3> right = normalize(cross(direction, world_up));
-    vec<3> up = cross(right, direction);
-    
-    mat<4> rotation (1.f);
-    for (int i = 0; i < 3; ++i){
-        rotation[0][i] = right[i];
-        rotation[1][i] = up[i];
-        rotation[2][i] = - direction[i];
-    }
 
-    mat<4> translation = translation_matrix(- position);
-
-    return rotation * translation;
+    return look_at(direction, right) * translation_matrix(- position);
 }
 
 // TODO? shearing

@@ -8,6 +8,7 @@
 #include "shader.h" // compile and link shader programs
 #include "stb_image.h" // load images and textures
 #include "matrix.h" // useful classes vec<N> and mat<M>
+#include "camera.h" // camera object
 
 // aliases for class templates in "matrix.h"
 typedef vec<2> vec2;
@@ -20,16 +21,12 @@ typedef mat<4> mat4;
 // #define PI (float)M_PI // one-byte value for pi
 
 // global variables
+static const float right_angle = M_PI / 2;
 GLuint vao; // vertex array object, store state configurations
 GLuint vbo, vbo2; // vertex buffer object
 GLuint ebo; // element buffer object
 GLuint texture1, texture2; // texture objects
-// camera infos
-vec3 cam_target {0.f, 0.f, 0.f};
-vec3 world_up {0.f, 1.f, 0.f};
-float distance = 5.f;
-float angle = 0.f;
-float cam_speed = 0.025f;
+Camera cam; // camera object
 
 
 
@@ -47,18 +44,33 @@ void process(GLFWwindow* window){
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
     // camera control
+    // horizontal (relative to current orientation) moving
+    if (glfwGetKey(window, GLFW_KEY_W))
+        cam.position += cam.front() * cam.velocity;
+    if (glfwGetKey(window, GLFW_KEY_S))
+        cam.position += - cam.front() * cam.velocity;
+    if (glfwGetKey(window, GLFW_KEY_D))
+        cam.position += cam.right() * cam.velocity;
+    if (glfwGetKey(window, GLFW_KEY_A))
+        cam.position += - cam.right() * cam.velocity;
+    // manipulate orientation
     if (glfwGetKey(window, GLFW_KEY_LEFT))
-        angle += cam_speed;
+        cam.yaw -= cam.angular_velocity;
     if (glfwGetKey(window, GLFW_KEY_RIGHT))
-        angle -= cam_speed;
-    if (glfwGetKey(window, GLFW_KEY_UP)){
-        distance -= cam_speed;
-        if (distance < 3.f) distance = 3.f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN)){
-        distance += cam_speed;
-        if (distance > 10.f) distance = 10.f;
-    }
+        cam.yaw += cam.angular_velocity;
+    if (glfwGetKey(window, GLFW_KEY_UP))
+        cam.pitch = std::min(cam.pitch + cam.angular_velocity, right_angle);
+    if (glfwGetKey(window, GLFW_KEY_DOWN))
+        cam.pitch = std::max(cam.pitch - cam.angular_velocity, - right_angle);
+    // ascend & descend in world space
+    if (glfwGetKey(window, GLFW_KEY_SPACE))
+        cam.position[1] += cam.velocity;
+    if (glfwGetKey(window, GLFW_KEY_C))
+        cam.position[1] -= cam.velocity;
+    // reset camera position and orientation 
+    if (glfwGetKey(window, GLFW_KEY_R))
+        cam.reset();
+
 }
 
 
@@ -328,11 +340,10 @@ int main()
         mat4 projection = perspective_matrix(0.1f, 100.f, M_PI/6, (float) screen_width/screen_height);
         shader_program.pass_mat4("projection", projection.begin());
 
-        vec3 cam_pos = vec3 {std::cos(angle), 0.f, std::sin(angle)} * distance;
         for (int i = 0; i < 10; ++i){
             // model-view matrix
             mat4 modelview = translation_matrix(positions[i]); // model space -> world space
-            modelview = camera_view_matrix(cam_pos, cam_target, world_up) * modelview;
+            modelview = cam.view_matrix() * modelview;
             shader_program.pass_mat4("modelview", modelview.begin());
 
             draw_array();

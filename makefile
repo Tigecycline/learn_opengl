@@ -1,7 +1,7 @@
 main.out: main.o shader.o stb_image.o
 	g++ -Wall -pedantic -lglfw -lGLEW -lGL main.o shader.o stb_image.o -o main.out
 
-main.o: shader.h matrix.h main.cpp 
+main.o: shader.h matrix.h camera.h main.cpp 
 	g++ -Wall -pedantic -c main.cpp
 
 shader.o: shader.h shader.cpp
