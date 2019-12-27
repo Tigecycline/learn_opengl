@@ -12,5 +12,5 @@ typedef vec<4> vec4;
 
 int main()
 {
-    
+    return 0;
 }
