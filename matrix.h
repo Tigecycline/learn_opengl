@@ -9,7 +9,7 @@
 #include <cmath>
 
 
-static const float pi = 3.14159265358979323846;
+static const float pi = 3.1415926535897932384626433; // 25 digits
 static const float right_angle = pi / 2;
 
 
@@ -33,8 +33,9 @@ class vec
 
 
     public: 
-    // default constructor, zero vector
-    vec(): values {0}
+    // default constructor, returns zero vector
+    vec()
+    : values {0}
     {}
 
     // constructor with initializer list
@@ -61,7 +62,7 @@ class vec
     // default destructor, nothing to do
     ~vec(){}
 
-    // pointer to first/one past last element
+    // pointer to first & one past last element
     float* begin()
     {
         return values;
@@ -149,7 +150,8 @@ class vec
     }
 
     // negation
-    const vec operator-() const{
+    const vec operator-() const
+    {
         vec result (*this);
         result.map([](float& element){element = - element;});
         return result;

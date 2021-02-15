@@ -4,7 +4,7 @@ in vec2 texCoord;
 
 out vec4 fragColor;
 
-// samplerxD passes automatically the currently bound xD texture, 
+// samplerxD passes automatically the currently bound x-D texture, 
 // hence no need for explicit declaration in main code
 uniform sampler2D texture1; 
 uniform sampler2D texture2; 

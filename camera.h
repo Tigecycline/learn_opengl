@@ -1,3 +1,7 @@
+#ifndef CAMERA_H
+#define CAMERA_H
+
+
 #include<cassert>
 #include<cmath>
 
@@ -16,13 +20,13 @@ class Camera
     const float velocity;
     const float angular_velocity;
     vec3 position;
-    float pitch;
-    float yaw;
-    float roll;
+    float pitch; // > -90 , < 90 degrees
+    float yaw; // > -180, =< 180 degrees
+    float roll; // > -180, = <180 degrees
     float fov;
 
     public: 
-    // default constructor, start at origin facing -z direction
+    // default constructor, start upright at origin facing -z direction
     Camera(): 
     velocity {0.05f}, angular_velocity {0.05f}, position {0.f, 0.f, 0.f}, pitch {0.f}, yaw {0.f}, roll {0.f}, fov {pi/6}
     {}
@@ -59,3 +63,7 @@ class Camera
         return rotation * translation;
     }
 };
+
+
+
+#endif
