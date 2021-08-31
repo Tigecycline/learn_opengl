@@ -2,8 +2,8 @@
 #include <cmath>
 
 // #define GLEW_STATIC // link to GLEW statically (why?)
-#include <GL/glew.h> // load openGL functions, must be included before GLFW
-#include <GLFW/glfw3.h> // window creation
+#include <GL/glew.h> // loads pointers to OpenGL functions at runtime, must be included before GLFW
+#include <GLFW/glfw3.h> // API for creating windows, contexts and surfaces, receiving input and events
 
 #include "shader.h" // compile and link shader programs
 #include "stb_image.h" // load images and textures
@@ -211,14 +211,25 @@ void draw_array()
 
 
 
+// callback function that gets executed each time the window is resized
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height); // adjust the rendering window according to new window size
+}
+
+
+
+
 int main()
 {
     // initialise and configure GLFW library
     glfwInit();
-    /* configure options for GLFW, leads to failure, cause unknown 
+    /* 
+    // configure options for GLFW, leads to failure, cause unknown 
     // use opengl version 3.3 (check installed version by glxinfo | grep "OpenGL version")
-    glfwWindowHint(GLFW_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_VERSION_MINOR, 6);
+    // It seems later versions such as 4.6 work as well
+    glfwWindowHint(GLFW_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_VERSION_MINOR, 3);
     // use only the core profile -> results in failure in window creation, why?
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     */
@@ -237,8 +248,12 @@ int main()
     // make OpenGL context active
     glfwMakeContextCurrent(window);
 
-    glewExperimental = GL_TRUE; // force GLEW to use a modern OpenGL method for checking if a function is available
+    // force GLEW to use a modern OpenGL method for checking if a function is available (only needed for GLEW 1.13 or earlier) 
+    // glewExperimental = GL_TRUE; 
+
     glewInit(); // initialise GLEW, must be done after OpenGL context is created
+    glViewport(0, 0, 1280, 720); // position (lower left corner) & size of the rendering window
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // callback for window resizing
 
     // check maximal number of attributes that can be declared in vertex shader (usually 16, can be higher)
     // int nrAttributes;
