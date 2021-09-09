@@ -7,4 +7,4 @@ Compilation commands can be found in makefile
 
 The test.cpp file is not part of project but is for testing C++ features
 
-I have been following primarily the tutorial on this website https://learnopengl.com/
+I have been following primarily (but not exclusively) the tutorial on this website https://learnopengl.com/

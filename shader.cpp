@@ -1,7 +1,7 @@
 #include "shader.h"
 
 
-std::string Shader::read_file(const std::string filename)
+std::string Shader::read_file(const char* filename)
 {
     std::string content;
     std::ifstream ifs;
@@ -14,7 +14,7 @@ std::string Shader::read_file(const std::string filename)
 }
 
 
-GLuint Shader::compile_shader(const std::string filename, GLuint shader_type)
+GLuint Shader::compile_shader(const char* filename, GLuint shader_type)
 {
     std::string source = std::move(read_file(filename));
     const GLchar *shader_source = source.c_str();
@@ -43,7 +43,7 @@ void Shader::activate()
 }
 
 
-void Shader::load_shaders(const std::string vert, const std::string frag)
+void Shader::load_shaders(const char* vert, const char* frag)
 {
     // compile individual GLSL files
     GLuint vertex_shader = compile_shader(vert, GL_VERTEX_SHADER);

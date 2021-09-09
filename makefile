@@ -12,3 +12,6 @@ stb_image.o: stb_image.h stb_image.cpp
 
 clean: 
 	@rm *.o main.out
+
+test: stb_image.o
+	g++ -Wall -pedantic -lglfw -lGLEW -lGL test.cpp stb_image.o -o test.out

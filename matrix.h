@@ -59,9 +59,6 @@ class vec
         return *this;
     }
 
-    // default destructor, nothing to do
-    ~vec(){}
-
     // pointer to first & one past last element
     float* begin()
     {
@@ -133,6 +130,12 @@ class vec
         return *this; 
     }
 
+    vec& operator/=(float f)
+    {
+        map([f](float& element){element /= f;});
+        return *this; 
+    }
+
     // vector addition
     const vec operator+(const vec& v) const
     {
@@ -163,6 +166,12 @@ class vec
         return *this;
     }
 
+    vec& operator-=(const vec& v)
+    {
+        for (int i = 0; i < N; ++i) values[i] -= v[i];
+        return *this;
+    }
+
     // dot product
     float dot(const vec& v)
     {
@@ -173,11 +182,11 @@ class vec
 
     bool operator==(const vec& v) const
     {
-        bool equal = true;
+        bool equality = true;
         for (int i = 0; i < N; ++i)
             if (values[i] != v[i])
-                equal = false;
-        return equal;
+                equality = false;
+        return equality;
     }
 
     bool operator!=(const vec& v) const
@@ -205,7 +214,7 @@ class vec
 template<int M>
 class mat
 {
-    public:
+    private:
     float values[M*M];
 
 
@@ -288,9 +297,6 @@ class mat
         std::copy(m.begin(), m.end(), begin());
         return *this;
     }
-
-    // default destructor, nothing to do
-    ~mat(){}
 
     // pointer to first / one past last element
     float* begin()
@@ -429,7 +435,7 @@ const vec<3> cross(const vec<3>& a, const vec<3>& b)
 
 
 /*
-    Linear transformations
+    Linear transformations used in graphics
 */
 // naive 3D translation matrix
 const mat<4> translation_matrix(const vec<3>& v)
@@ -454,25 +460,26 @@ const mat<4> translate(const mat<4>& m, const vec<3>& v)
 }
 
 // PRE: angle in radian (instead of degree)
-// PRE: axis must be unit vector unless it is on x-, y-, or z-axis
 // naive rotation matrix around an axis through the origin
 const mat<4> rotation_matrix(float angle, const vec<3>& axis)
 {
+    vec<3> unit_axis = normalize(axis);
+
     mat<4> result (1.f);
-    float cos = std::cos(angle);
-    float sin = std::sin(angle);
+    float cosine = std::cos(angle);
+    float sine = std::sin(angle);
 
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
-            result[i][j] = axis[i] * axis[j] * (1 - cos);
+            result[i][j] = unit_axis[i] * unit_axis[j] * (1 - cosine);
     
-    for (int i = 0; i < 3; ++i) result[i][i] += cos;
-    result[0][1] -= axis[2] * sin;
-    result[0][2] += axis[1] * sin;
-    result[1][0] += axis[2] * sin;
-    result[1][2] -= axis[0] * sin;
-    result[2][0] -= axis[1] * sin;
-    result[2][1] += axis[0] * sin;
+    for (int i = 0; i < 3; ++i) result[i][i] += cosine;
+    result[0][1] -= unit_axis[2] * sine;
+    result[0][2] += unit_axis[1] * sine;
+    result[1][0] += unit_axis[2] * sine;
+    result[1][2] -= unit_axis[0] * sine;
+    result[2][0] -= unit_axis[1] * sine;
+    result[2][1] += unit_axis[0] * sine;
 
     return result;
 }
@@ -491,7 +498,7 @@ const mat<4> rotate(const mat<4>& m, float angle, float x, float y, float z)
     return rotation_matrix(angle, x, y, z) * m;
 }
 
-// naive resize_matrix
+// naive resize matrix
 const mat<4> scale_matrix(const vec<3>& v)
 {
     mat<4> m (1.f);
@@ -514,15 +521,16 @@ const mat<4> scale(const mat<4>& m, float sx, float sy, float sz)
 }
 
 // PRE: 0 < znear < zfar (negation of the actual z coordinates)
-// PRE: theta - field of view in radian, aspect - ratio width/height (of screen)
+// theta: field of view in radian 
+// aspect: ratio width/height (of screen) 
 // POST: persepctive matrix (given camera at origin, -z as front and +y as top)
-const mat<4> perspective_matrix(float znear, float zfar, float theta, float aspect)
+const mat<4> perspective_matrix(float znear, float zfar, float fov, float aspect)
 {
     assert(0 < znear && znear < zfar);
-    assert(0 < theta && theta < pi / 2);
+    assert(0 < fov && fov < pi / 2);
     assert(0 < aspect);
     mat<4> result;
-    float f = 1.f / std::tan(theta);
+    float f = 1.f / std::tan(fov);
     result[0][0] = f / aspect;
     result[1][1] = f;
     result[2][2] = (znear + zfar) / (znear - zfar);
@@ -532,10 +540,19 @@ const mat<4> perspective_matrix(float znear, float zfar, float theta, float aspe
 }
 
 
-// PRE: front and right must be perpendicular and normalized
-const mat<4> look_at(const vec<3> front, const vec<3> right)
+// PRE: 0 < znear < zfar (negation of the actual z coordinates)
+const mat<4> orthographic_matrix(float znear, float zfar, float width, float height)
 {
-    vec<3> up = cross(right, front);
+    assert(0 < znear && znear < zfar); 
+    assert(width > 0 && height > 0); 
+    return scale_matrix(1/width, 1/height, -1/(zfar - znear)) * translation_matrix(0, 0, (znear + zfar)/2); 
+}
+
+
+// Map world coordinates to camera coordiantes (a basis change, from linear algebraic perspective)
+// PRE: front, right and up must be orthonormal
+const mat<4> look_at(const vec<3> front, const vec<3> right, const vec<3> up)
+{
     mat<4> result (1.f);
     for (int i = 0; i < 3; ++i){
         result[0][i] = right[i];
@@ -546,7 +563,14 @@ const mat<4> look_at(const vec<3> front, const vec<3> right)
     return result;
 }
 
+// PRE: front and right must be orthonormal
+const mat<4> look_at(const vec<3> front, const vec<3> right)
+{
+    return look_at(front, right, cross(right, front));
+}
 
+
+/*
 // PRE: camera position, target position, up direction of world space
 // PRE: cannot look directly down/up, i.e. target - position cannot be parallel with world_up
 // POST: corresponding camera view matrix
@@ -558,10 +582,9 @@ const mat<4> camera_view_matrix(const vec<3>& position, const vec<3>& target, co
 
     return look_at(direction, right) * translation_matrix(- position);
 }
+*/
 
-// TODO? shearing
-// TODO? reflection
-// TODO? more complex transformations
+// TODO? shearing, reflection, more complex transformations
 
 
 
